@@ -3,6 +3,6 @@
     <string name="textview">TextView</string>
     <string name="get_battery_level">Get battery level</string>
     <string name="todo">TODO</string>
-    <string name="send_jason">Send Jason</string>
+    <string name="send_jason">Send Json</string>
     <string name="battery_level">Battery Level:</string>
 </resources>
