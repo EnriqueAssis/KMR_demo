@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#FB6C27</color>
-    <color name="colorPrimaryDark">#9C797979</color>
+    <color name="colorPrimaryDark">#929292</color>
     <color name="colorAccent">#4B6B8E</color>
+    <color name="kukaRed">#AF2C3A</color>
+    <color name="kukaYellow">#FFCB01</color>
+
 </resources>

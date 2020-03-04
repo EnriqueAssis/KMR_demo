@@ -4,11 +4,15 @@ package com.kuka.kmr_demo;
     2020-02-28
  */
 
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -41,6 +45,19 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
     private TextView textView;
+    private TextView textView1;
+    private TextView textView2;
+    private TextView emergencyStop;
+    private TextView emergencyFalse;
+    private TextView safeBox;
+    private TextView acknowledge;
+    private TextView protectiveStop;
+    private TextView warningField;
+    private TextView emergencyState;
+
+    private Integer node = -1;
+    private String safetyState = "";
+
     private RequestQueue queue; //for requesting Json
     private RequestQueue requestQueue; //for sending Json
 
@@ -55,10 +72,17 @@ public class MainActivity extends AppCompatActivity {
     /* Test for KMR position */
     private Button it_is_at1;
     private Button it_is_at2;
-    private Button it_is_at3;
+//    private Button it_is_at3;
     private Button it_is_at4;
     private Button it_is_at5;
     private Button it_is_at6;
+//    private Button it_is_moving;
+
+    private Button ack ;
+    private Button es ;
+    private Button protectbutton ;
+    private Button safe ;
+    private Button warning ;
 
     /* KMR icon position animation*/
     private ImageView kmr1;
@@ -69,12 +93,12 @@ public class MainActivity extends AppCompatActivity {
     private ImageView kmr6;
 
     /* KMR position animation variables*/
-    private boolean at_node1 = false;
-    private boolean at_node2 = false;
-    private boolean at_node3 = false;
-    private boolean at_node4 = false;
-    private boolean at_node5 = false;
-    private boolean at_node6 = false;
+//    private boolean at_node1 = false;
+//    private boolean at_node2 = false;
+//    private boolean at_node3 = false;
+//    private boolean at_node4 = false;
+//    private boolean at_node5 = false;
+//    private boolean at_node6 = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,59 +112,103 @@ public class MainActivity extends AppCompatActivity {
         goto5 = (ImageButton) findViewById(R.id.imageButton5);
         goto6 = (ImageButton) findViewById(R.id.imageButton6);
 
-//        it_is_at1 = (Button) findViewById(R.id.button11);
-//        it_is_at2 = (Button) findViewById(R.id.button12);
+        it_is_at1 = (Button) findViewById(R.id.button11);
+        it_is_at2 = (Button) findViewById(R.id.button12);
 //        it_is_at3 = (Button) findViewById(R.id.button13);
-//        it_is_at4 = (Button) findViewById(R.id.button14);
+        it_is_at4 = (Button) findViewById(R.id.button14);
 //        it_is_at5 = (Button) findViewById(R.id.button15);
-//        it_is_at6 = (Button) findViewById(R.id.button16);
-//
-//        kmr1 = (ImageView) findViewById(R.id.kmr1);
-//        kmr2 = (ImageView) findViewById(R.id.kmr2);
-//        kmr3 = (ImageView) findViewById(R.id.kmr3);
-//        kmr4 = (ImageView) findViewById(R.id.kmr4);
-//        kmr5 = (ImageView) findViewById(R.id.kmr5);
-//        kmr6 = (ImageView) findViewById(R.id.kmr6);
+        it_is_at6 = (Button) findViewById(R.id.button16);
+
+        kmr1 = (ImageView) findViewById(R.id.kmr1);
+        kmr2 = (ImageView) findViewById(R.id.kmr2);
+        kmr3 = (ImageView) findViewById(R.id.kmr3);
+        kmr4 = (ImageView) findViewById(R.id.kmr4);
+        kmr5 = (ImageView) findViewById(R.id.kmr5);
+        kmr6 = (ImageView) findViewById(R.id.kmr6);
+
+        ack = (Button) findViewById(R.id.button22);
+        es = (Button) findViewById(R.id.button23);
+        protectbutton = (Button) findViewById(R.id.button24);
+        safe = (Button) findViewById(R.id.button25);
+        warning = (Button) findViewById(R.id.button26);
 
         //handler check for KMR feedback every 250 milliseconds
+
+        ack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                safetyState = "ACKNOWLEDGE_REQUIRED";
+            }
+        });
+        es.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                safetyState = "EMERGENCY_STOP";
+            }
+        });
+        protectbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                safetyState = "PROTECTIVE_STOP";
+            }
+        });
+        safe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                safetyState = "SAFE";
+            }
+        });
+        warning.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                safetyState = "WARNING_FIELD";
+            }
+        });
 
         final Handler handler = new Handler();
         final int delay = 250; //milliseconds
 
         handler.postDelayed(new Runnable() {
             public void run() {
+                jsonRequest();
+                safetyAnimation();
 
                 // check which node is active to show the solid icon at the position.
-                if (at_node1) {
+                if (node==1) {
                     clearIcons();
                     kmr1.setVisibility(View.VISIBLE);
-                    at_node1 = true;
-                } else if (at_node2) {
+                    node = 1;
+                } else if (node==2) {
                     clearIcons();
                     kmr2.setVisibility(View.VISIBLE);
-                    at_node2 = true;
+                    node = 2;
 
-                } else if (at_node3) {
+                } else if (node==7) {
                     clearIcons();
                     kmr3.setVisibility(View.VISIBLE);
-                    at_node3 = true;
+                    node = 7;
 
-                } else if (at_node4) {
+                } else if (node==4) {
                     clearIcons();
                     kmr4.setVisibility(View.VISIBLE);
-                    at_node4 = true;
+                    node = 4;
 
-                } else if (at_node5) {
+                } else if (node==5) {
                     clearIcons();
                     kmr5.setVisibility(View.VISIBLE);
-                    at_node5 = true;
+                    node = 5;
 
-                } else if (at_node6) {
+                } else if (node==8) {
                     clearIcons();
                     kmr6.setVisibility(View.VISIBLE);
-                    at_node6 = true;
+                    node = 8;
 
                 }
+//                else if (node==-1) {
+//                clearIcons();
+//                final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+//                checkPosition();
+//                }
                 handler.postDelayed(this, delay);
             }
         }, delay);
@@ -222,163 +290,213 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        /* Listener checks if the KMR is at a specific node. If so, all animations
+         * are cleared, and a solid icon will be shown at the right node.*/
+        it_is_at1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearIcons();
+                node = 1;
+//                at_node1 = true;
+            }
+        });
 
-        /* *** Getting Json *** */
+        it_is_at2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearIcons();
+                node = 2;
+            }
+        });
+
+// //       it_is_at3.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 7;
+//            }
+//        });
+
+        it_is_at4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearIcons();
+                node = 4;
+            }
+        });
+
+//        it_is_at5.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 5;
+//            }
+//        });
+
+        it_is_at6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearIcons();
+                node = 8;
+            }
+        });
+
+//        it_is_moving.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = -1;
+//            }
+//        });
+
         textView = findViewById(R.id.text_battery);
-        Button buttonParse = findViewById(R.id.button_parse);
+        textView1 = findViewById(R.id.text_node);
+        textView2 = findViewById(R.id.text_safetyState);
+        acknowledge = findViewById(R.id.safetygray);
+        emergencyStop = findViewById(R.id.emergencyTrue);
+        protectiveStop = findViewById(R.id.safetyblue);
+        emergencyFalse = findViewById(R.id.emergencyFalse);
+        warningField = findViewById(R.id.safetyyellow);
+        safeBox = findViewById(R.id.safeBox);
+        emergencyState = findViewById(R.id.emergencyState);
 
         queue = Volley.newRequestQueue(this);
 
-        buttonParse.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                jsonRequest();
-            }
-        });
-
-        /* *** Sending Json *** */
-
-        Button submitButton = (Button) findViewById(R.id.button_parse2);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                String data = "{\n" +
-                        "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
-                        "}";
-                Submit(data);
-
-            }
-        });
-
     }
 
-    /* ***********END OF ONCREATE ************ */
+    /* ***********END OF ON CREATE ************ */
 
     // This method clears all animations, but the one where the KMR currently is.
     public void checkPosition(){
-//        if (at_node1){
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr1.startAnimation(animation);
-//
-//            kmr2.clearAnimation();
-//            kmr3.clearAnimation();
-//            kmr4.clearAnimation();
-//            kmr5.clearAnimation();
-//            kmr6.clearAnimation();
-//
-//            kmr2.setVisibility(View.INVISIBLE);
-//            kmr3.setVisibility(View.INVISIBLE);
-//            kmr4.setVisibility(View.INVISIBLE);
-//            kmr5.setVisibility(View.INVISIBLE);
-//            kmr6.setVisibility(View.INVISIBLE);
-//
+        if (node==1){
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr1.startAnimation(animation);
+
+            kmr2.clearAnimation();
+            kmr3.clearAnimation();
+            kmr4.clearAnimation();
+            kmr5.clearAnimation();
+            kmr6.clearAnimation();
+
+            kmr2.setVisibility(View.INVISIBLE);
+            kmr3.setVisibility(View.INVISIBLE);
+            kmr4.setVisibility(View.INVISIBLE);
+            kmr5.setVisibility(View.INVISIBLE);
+            kmr6.setVisibility(View.INVISIBLE);
+
 //            at_node1 = false;
-//        }
-//        else if (at_node2){
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr2.startAnimation(animation);
-//
-//            kmr1.clearAnimation();
-//            kmr3.clearAnimation();
-//            kmr4.clearAnimation();
-//            kmr5.clearAnimation();
-//            kmr6.clearAnimation();
-//
-//            kmr1.setVisibility(View.INVISIBLE);
-//            kmr3.setVisibility(View.INVISIBLE);
-//            kmr4.setVisibility(View.INVISIBLE);
-//            kmr5.setVisibility(View.INVISIBLE);
-//            kmr6.setVisibility(View.INVISIBLE);
-//
-//            at_node2 = false;
-//
-//        }
-//        else if (at_node3) {
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr3.startAnimation(animation);
-//
-//            kmr1.clearAnimation();
-//            kmr2.clearAnimation();
-//            kmr4.clearAnimation();
-//            kmr5.clearAnimation();
-//            kmr6.clearAnimation();
-//
-//            kmr1.setVisibility(View.INVISIBLE);
-//            kmr2.setVisibility(View.INVISIBLE);
-//            kmr4.setVisibility(View.INVISIBLE);
-//            kmr5.setVisibility(View.INVISIBLE);
-//            kmr6.setVisibility(View.INVISIBLE);
-//
+            node = 0;
+        }
+        else if (node==2){
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr2.startAnimation(animation);
+
+            kmr1.clearAnimation();
+            kmr3.clearAnimation();
+            kmr4.clearAnimation();
+            kmr5.clearAnimation();
+            kmr6.clearAnimation();
+
+            kmr1.setVisibility(View.INVISIBLE);
+            kmr3.setVisibility(View.INVISIBLE);
+            kmr4.setVisibility(View.INVISIBLE);
+            kmr5.setVisibility(View.INVISIBLE);
+            kmr6.setVisibility(View.INVISIBLE);
+
+            //at_node2 = false;
+            node=0;
+        }
+        else if (node==7) {
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr3.startAnimation(animation);
+
+            kmr1.clearAnimation();
+            kmr2.clearAnimation();
+            kmr4.clearAnimation();
+            kmr5.clearAnimation();
+            kmr6.clearAnimation();
+
+            kmr1.setVisibility(View.INVISIBLE);
+            kmr2.setVisibility(View.INVISIBLE);
+            kmr4.setVisibility(View.INVISIBLE);
+            kmr5.setVisibility(View.INVISIBLE);
+            kmr6.setVisibility(View.INVISIBLE);
+
 //            at_node3 = false;
-//
-//        }
-//        else if (at_node4) {
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr4.startAnimation(animation);
-//
-//            kmr1.clearAnimation();
-//            kmr2.clearAnimation();
-//            kmr3.clearAnimation();
-//            kmr5.clearAnimation();
-//            kmr6.clearAnimation();
-//
-//            kmr1.setVisibility(View.INVISIBLE);
-//            kmr2.setVisibility(View.INVISIBLE);
-//            kmr3.setVisibility(View.INVISIBLE);
-//            kmr5.setVisibility(View.INVISIBLE);
-//            kmr6.setVisibility(View.INVISIBLE);
-//
+            node=0;
+
+        }
+        else if (node==4) {
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr4.startAnimation(animation);
+
+            kmr1.clearAnimation();
+            kmr2.clearAnimation();
+            kmr3.clearAnimation();
+            kmr5.clearAnimation();
+            kmr6.clearAnimation();
+
+            kmr1.setVisibility(View.INVISIBLE);
+            kmr2.setVisibility(View.INVISIBLE);
+            kmr3.setVisibility(View.INVISIBLE);
+            kmr5.setVisibility(View.INVISIBLE);
+            kmr6.setVisibility(View.INVISIBLE);
+
 //            at_node4 = false;
-//
-//        }
-//        else if (at_node5) {
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr5.startAnimation(animation);
-//
-//            kmr1.clearAnimation();
-//            kmr2.clearAnimation();
-//            kmr3.clearAnimation();
-//            kmr4.clearAnimation();
-//            kmr6.clearAnimation();
-//
-//            kmr1.setVisibility(View.INVISIBLE);
-//            kmr2.setVisibility(View.INVISIBLE);
-//            kmr3.setVisibility(View.INVISIBLE);
-//            kmr4.setVisibility(View.INVISIBLE);
-//            kmr6.setVisibility(View.INVISIBLE);
-//
+            node=0;
+
+        }
+        else if (node==5) {
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr5.startAnimation(animation);
+
+            kmr1.clearAnimation();
+            kmr2.clearAnimation();
+            kmr3.clearAnimation();
+            kmr4.clearAnimation();
+            kmr6.clearAnimation();
+
+            kmr1.setVisibility(View.INVISIBLE);
+            kmr2.setVisibility(View.INVISIBLE);
+            kmr3.setVisibility(View.INVISIBLE);
+            kmr4.setVisibility(View.INVISIBLE);
+            kmr6.setVisibility(View.INVISIBLE);
+
 //            at_node5 = false;
-//
-//        }
-//        else if (at_node6) {
-//            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//            kmr6.startAnimation(animation);
-//
-//            kmr1.clearAnimation();
-//            kmr2.clearAnimation();
-//            kmr3.clearAnimation();
-//            kmr4.clearAnimation();
-//            kmr5.clearAnimation();
-//
-//            kmr1.setVisibility(View.INVISIBLE);
-//            kmr2.setVisibility(View.INVISIBLE);
-//            kmr3.setVisibility(View.INVISIBLE);
-//            kmr4.setVisibility(View.INVISIBLE);
-//            kmr5.setVisibility(View.INVISIBLE);
-//
+            node=0;
+
+        }
+        else if (node==8) {
+            final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
+            kmr6.startAnimation(animation);
+
+            kmr1.clearAnimation();
+            kmr2.clearAnimation();
+            kmr3.clearAnimation();
+            kmr4.clearAnimation();
+            kmr5.clearAnimation();
+
+            kmr1.setVisibility(View.INVISIBLE);
+            kmr2.setVisibility(View.INVISIBLE);
+            kmr3.setVisibility(View.INVISIBLE);
+            kmr4.setVisibility(View.INVISIBLE);
+            kmr5.setVisibility(View.INVISIBLE);
+
 //            at_node6 = false;
-//
-//        }
-    }
+            node=0;
 
+        }
+    }
 
     public void clearIcons() {
 
-        at_node1 = false;
-        at_node2 = false;
-        at_node3 = false;
-        at_node4 = false;
-        at_node5 = false;
-        at_node6 = false;
+//        at_node1 = false;
+//        at_node2 = false;
+//        at_node3 = false;
+//        at_node4 = false;
+//        at_node5 = false;
+//        at_node6 = false;
+        node=0;
 
         kmr1.clearAnimation();
         kmr2.clearAnimation();
@@ -395,31 +513,59 @@ public class MainActivity extends AppCompatActivity {
         kmr6.setVisibility(View.INVISIBLE);
     }
 
-/*
-    public void clearIcons() {
+    /* Method to animate the safety state box*/
 
-        at_node1 = false;
-        at_node2 = false;
-        at_node3 = false;
-        at_node4 = false;
-        at_node5 = false;
-        at_node6 = false;
+    private void safetyAnimation(){
 
-        kmr1.clearAnimation();
-        kmr2.clearAnimation();
-        kmr3.clearAnimation();
-        kmr4.clearAnimation();
-        kmr5.clearAnimation();
-        kmr6.clearAnimation();
+        if(safetyState=="ACKNOWLEDGE_REQUIRED"){
+            emergencyStop.setVisibility(View.INVISIBLE);
+            emergencyFalse.setVisibility(View.VISIBLE);
+            acknowledge.setVisibility(View.VISIBLE);
+            protectiveStop.setVisibility(View.INVISIBLE);
+            safeBox.setVisibility(View.INVISIBLE);
+            warningField.setVisibility(View.INVISIBLE);
+            emergencyState.setVisibility(View.INVISIBLE);
+        }
+        else if(safetyState=="EMERGENCY_STOP"){
+            emergencyStop.setVisibility(View.VISIBLE);
+            emergencyFalse.setVisibility(View.INVISIBLE);
+            acknowledge.setVisibility(View.INVISIBLE);
+            protectiveStop.setVisibility(View.INVISIBLE);
+            safeBox.setVisibility(View.INVISIBLE);
+            warningField.setVisibility(View.INVISIBLE);
+            emergencyState.setVisibility(View.VISIBLE);
+        }
+        else if (safetyState=="SAFE"){
+            emergencyStop.setVisibility(View.INVISIBLE);
+            emergencyFalse.setVisibility(View.VISIBLE);
+            acknowledge.setVisibility(View.INVISIBLE);
+            protectiveStop.setVisibility(View.INVISIBLE);
+            safeBox.setVisibility(View.VISIBLE);
+            warningField.setVisibility(View.INVISIBLE);
+            emergencyState.setVisibility(View.INVISIBLE);
+        }
+        else if(safetyState=="PROTECTIVE_STOP"){
+            emergencyStop.setVisibility(View.INVISIBLE);
+            emergencyFalse.setVisibility(View.VISIBLE);
+            acknowledge.setVisibility(View.INVISIBLE);
+            protectiveStop.setVisibility(View.VISIBLE);
+            safeBox.setVisibility(View.INVISIBLE);
+            warningField.setVisibility(View.INVISIBLE);
+            emergencyState.setVisibility(View.INVISIBLE);
+        }
 
-        kmr1.setVisibility(View.INVISIBLE);
-        kmr2.setVisibility(View.INVISIBLE);
-        kmr3.setVisibility(View.INVISIBLE);
-        kmr4.setVisibility(View.INVISIBLE);
-        kmr5.setVisibility(View.INVISIBLE);
-        kmr6.setVisibility(View.INVISIBLE);
+        else if(safetyState=="WARNING_FIELD"){
+            emergencyStop.setVisibility(View.INVISIBLE);
+            emergencyFalse.setVisibility(View.VISIBLE);
+            acknowledge.setVisibility(View.INVISIBLE);
+            protectiveStop.setVisibility(View.INVISIBLE);
+            safeBox.setVisibility(View.INVISIBLE);
+            warningField.setVisibility(View.VISIBLE);
+            emergencyState.setVisibility(View.INVISIBLE);
+        }
+
     }
-*/
+
     /* Class to request Json */
 
     private void jsonRequest() {
@@ -435,7 +581,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 textView.setText("Data Not Received");
-
             }
         });
 
@@ -452,7 +597,12 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 textView.setText(jsonObject.getString("batteryLevel"));
+//              node = jsonObject.getInt("currentNodeID");  //activate when testing on real KMR
+                safetyState = jsonObject.getString("safetyState");
 
+
+//                textView1.setText(jsonObject.getString("currentNodeID"));
+                textView2.setText(String.valueOf( safetyState));
             }
         } catch (JSONException e) {
             e.printStackTrace();
