@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private TextView textView1;
     private TextView textView2;
+
+    /*two boxes on bottom right corner for safety state*/
     private TextView emergencyStop;
     private TextView emergencyFalse;
     private TextView safeBox;
@@ -55,7 +57,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView warningField;
     private TextView emergencyState;
 
-    private Integer node = -1;
+    private Integer node = 0;
+    private Integer previous_node = 0;
+
     private String safetyState = "";
 
     private RequestQueue queue; //for requesting Json
@@ -72,11 +76,11 @@ public class MainActivity extends AppCompatActivity {
     /* Test for KMR position */
     private Button it_is_at1;
     private Button it_is_at2;
-//    private Button it_is_at3;
+    private Button it_is_at3;
     private Button it_is_at4;
     private Button it_is_at5;
     private Button it_is_at6;
-//    private Button it_is_moving;
+    private Button it_is_moving;
 
     private Button ack ;
     private Button es ;
@@ -92,14 +96,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView kmr5;
     private ImageView kmr6;
 
-    /* KMR position animation variables*/
-//    private boolean at_node1 = false;
-//    private boolean at_node2 = false;
-//    private boolean at_node3 = false;
-//    private boolean at_node4 = false;
-//    private boolean at_node5 = false;
-//    private boolean at_node6 = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,12 +108,13 @@ public class MainActivity extends AppCompatActivity {
         goto5 = (ImageButton) findViewById(R.id.imageButton5);
         goto6 = (ImageButton) findViewById(R.id.imageButton6);
 
-        it_is_at1 = (Button) findViewById(R.id.button11);
-        it_is_at2 = (Button) findViewById(R.id.button12);
+//        it_is_at1 = (Button) findViewById(R.id.button11);
+//        it_is_at2 = (Button) findViewById(R.id.button12);
 //        it_is_at3 = (Button) findViewById(R.id.button13);
-        it_is_at4 = (Button) findViewById(R.id.button14);
+//        it_is_at4 = (Button) findViewById(R.id.button14);
 //        it_is_at5 = (Button) findViewById(R.id.button15);
-        it_is_at6 = (Button) findViewById(R.id.button16);
+//        it_is_at6 = (Button) findViewById(R.id.button16);
+//        it_is_moving = (Button) findViewById(R.id.button);
 
         kmr1 = (ImageView) findViewById(R.id.kmr1);
         kmr2 = (ImageView) findViewById(R.id.kmr2);
@@ -126,47 +123,68 @@ public class MainActivity extends AppCompatActivity {
         kmr5 = (ImageView) findViewById(R.id.kmr5);
         kmr6 = (ImageView) findViewById(R.id.kmr6);
 
-        ack = (Button) findViewById(R.id.button22);
-        es = (Button) findViewById(R.id.button23);
-        protectbutton = (Button) findViewById(R.id.button24);
-        safe = (Button) findViewById(R.id.button25);
-        warning = (Button) findViewById(R.id.button26);
+//        ack = (Button) findViewById(R.id.button22);
+//        es = (Button) findViewById(R.id.button23);
+//        protectbutton = (Button) findViewById(R.id.button24);
+//        safe = (Button) findViewById(R.id.button25);
+//        warning = (Button) findViewById(R.id.button26);
 
+        textView = findViewById(R.id.text_battery);
+        textView1 = findViewById(R.id.text_node);
+        textView2 = findViewById(R.id.text_safetyState);
+        acknowledge = findViewById(R.id.safetygray);
+        emergencyStop = findViewById(R.id.emergencyTrue);
+        protectiveStop = findViewById(R.id.safetyblue);
+        emergencyFalse = findViewById(R.id.emergencyFalse);
+        warningField = findViewById(R.id.safetyyellow);
+        safeBox = findViewById(R.id.safeBox);
+        emergencyState = findViewById(R.id.emergencyState);
+
+//
+//        ack.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                safetyState = "ACKNOWLEDGE_REQUIRED";
+//            }
+//        });
+//        es.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                safetyState = "EMERGENCY_STOP";
+//            }
+//        });
+//        protectbutton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                safetyState = "PROTECTIVE_STOP";
+//            }
+//        });
+//        safe.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                safetyState = "SAFE";
+//            }
+//        });
+//        warning.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                safetyState = "WARNING_FIELD";
+//            }
+//        });
+
+        if (safetyState=="SAFE"){
+            emergencyStop.setVisibility(View.INVISIBLE);
+            emergencyFalse.setVisibility(View.INVISIBLE);
+            acknowledge.setVisibility(View.INVISIBLE);
+            protectiveStop.setVisibility(View.INVISIBLE);
+            safeBox.setVisibility(View.INVISIBLE);
+            warningField.setVisibility(View.INVISIBLE);
+            emergencyState.setVisibility(View.INVISIBLE);
+        }
         //handler check for KMR feedback every 250 milliseconds
 
-        ack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                safetyState = "ACKNOWLEDGE_REQUIRED";
-            }
-        });
-        es.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                safetyState = "EMERGENCY_STOP";
-            }
-        });
-        protectbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                safetyState = "PROTECTIVE_STOP";
-            }
-        });
-        safe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                safetyState = "SAFE";
-            }
-        });
-        warning.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                safetyState = "WARNING_FIELD";
-            }
-        });
-
         final Handler handler = new Handler();
-        final int delay = 250; //milliseconds
+        final int delay = 500; //milliseconds
 
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -204,11 +222,11 @@ public class MainActivity extends AppCompatActivity {
                     node = 8;
 
                 }
-//                else if (node==-1) {
-//                clearIcons();
+                else if (node==-1) {
+                clearIcons();
 //                final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
-//                checkPosition();
-//                }
+                    checkPosition();
+                }
                 handler.postDelayed(this, delay);
             }
         }, delay);
@@ -221,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         goto1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
@@ -233,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         goto2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_2\"\n" +
@@ -245,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         goto3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_3\"\n" +
@@ -257,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         goto4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_4\"\n" +
@@ -269,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         goto5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_5\"\n" +
@@ -281,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
         goto6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkPosition();
+                //checkPosition();
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_6\"\n" +
@@ -292,24 +310,23 @@ public class MainActivity extends AppCompatActivity {
 
         /* Listener checks if the KMR is at a specific node. If so, all animations
          * are cleared, and a solid icon will be shown at the right node.*/
-        it_is_at1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearIcons();
-                node = 1;
-//                at_node1 = true;
-            }
-        });
+//        it_is_at1.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 1;
+//            }
+//        });
+//
+//        it_is_at2.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 2;
+//            }
+//        });
 
-        it_is_at2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearIcons();
-                node = 2;
-            }
-        });
-
-// //       it_is_at3.setOnClickListener(new View.OnClickListener() {
+ //       it_is_at3.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
 //                clearIcons();
@@ -317,13 +334,13 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        it_is_at4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearIcons();
-                node = 4;
-            }
-        });
+//        it_is_at4.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 4;
+//            }
+//        });
 
 //        it_is_at5.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -333,14 +350,14 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        it_is_at6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clearIcons();
-                node = 8;
-            }
-        });
-
+//        it_is_at6.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                clearIcons();
+//                node = 8;
+//            }
+//        });
+//
 //        it_is_moving.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {
@@ -348,17 +365,6 @@ public class MainActivity extends AppCompatActivity {
 //                node = -1;
 //            }
 //        });
-
-        textView = findViewById(R.id.text_battery);
-        textView1 = findViewById(R.id.text_node);
-        textView2 = findViewById(R.id.text_safetyState);
-        acknowledge = findViewById(R.id.safetygray);
-        emergencyStop = findViewById(R.id.emergencyTrue);
-        protectiveStop = findViewById(R.id.safetyblue);
-        emergencyFalse = findViewById(R.id.emergencyFalse);
-        warningField = findViewById(R.id.safetyyellow);
-        safeBox = findViewById(R.id.safeBox);
-        emergencyState = findViewById(R.id.emergencyState);
 
         queue = Volley.newRequestQueue(this);
 
@@ -368,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
 
     // This method clears all animations, but the one where the KMR currently is.
     public void checkPosition(){
-        if (node==1){
+        if (previous_node==1){
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr1.startAnimation(animation);
 
@@ -385,9 +391,8 @@ public class MainActivity extends AppCompatActivity {
             kmr6.setVisibility(View.INVISIBLE);
 
 //            at_node1 = false;
-            node = 0;
         }
-        else if (node==2){
+        else if (previous_node==2){
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr2.startAnimation(animation);
 
@@ -404,9 +409,8 @@ public class MainActivity extends AppCompatActivity {
             kmr6.setVisibility(View.INVISIBLE);
 
             //at_node2 = false;
-            node=0;
         }
-        else if (node==7) {
+        else if (previous_node==7) {
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr3.startAnimation(animation);
 
@@ -423,10 +427,10 @@ public class MainActivity extends AppCompatActivity {
             kmr6.setVisibility(View.INVISIBLE);
 
 //            at_node3 = false;
-            node=0;
+//            node=0;
 
         }
-        else if (node==4) {
+        else if (previous_node==4) {
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr4.startAnimation(animation);
 
@@ -443,10 +447,10 @@ public class MainActivity extends AppCompatActivity {
             kmr6.setVisibility(View.INVISIBLE);
 
 //            at_node4 = false;
-            node=0;
+//            node=0;
 
         }
-        else if (node==5) {
+        else if (previous_node==5) {
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr5.startAnimation(animation);
 
@@ -463,10 +467,10 @@ public class MainActivity extends AppCompatActivity {
             kmr6.setVisibility(View.INVISIBLE);
 
 //            at_node5 = false;
-            node=0;
+ //           node=0;
 
         }
-        else if (node==8) {
+        else if (previous_node==8) {
             final Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade);
             kmr6.startAnimation(animation);
 
@@ -483,7 +487,7 @@ public class MainActivity extends AppCompatActivity {
             kmr5.setVisibility(View.INVISIBLE);
 
 //            at_node6 = false;
-            node=0;
+//            node=0;
 
         }
     }
@@ -496,8 +500,8 @@ public class MainActivity extends AppCompatActivity {
 //        at_node4 = false;
 //        at_node5 = false;
 //        at_node6 = false;
-        node=0;
-
+//        node=0;
+//
         kmr1.clearAnimation();
         kmr2.clearAnimation();
         kmr3.clearAnimation();
@@ -597,12 +601,16 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 textView.setText(jsonObject.getString("batteryLevel"));
-//              node = jsonObject.getInt("currentNodeID");  //activate when testing on real KMR
+
+                node = jsonObject.getInt("currentNodeID");  //activate when testing on real KMR
+                if (node!=-1){
+                    previous_node=node;
+                }
                 safetyState = jsonObject.getString("safetyState");
+                safetyAnimation();
 
-
-//                textView1.setText(jsonObject.getString("currentNodeID"));
                 textView2.setText(String.valueOf( safetyState));
+                textView1.setText(Integer.toString(node));
             }
         } catch (JSONException e) {
             e.printStackTrace();
