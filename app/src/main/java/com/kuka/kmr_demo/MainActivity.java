@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
         goto6 = (ImageButton) findViewById(R.id.imageButton6);
 
         pause = (Button) findViewById(R.id.Pause);
-        stop = (Button) findViewById(R.id.Stop);
-        run = (Button) findViewById(R.id.Run);
+        stop = (Button) findViewById(R.id.Cancel);
+        run = (Button) findViewById(R.id.Resume);
 
 //        it_is_at1 = (Button) findViewById(R.id.button11);
 //        it_is_at2 = (Button) findViewById(R.id.button12);
