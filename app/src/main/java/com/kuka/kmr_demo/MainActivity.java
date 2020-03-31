@@ -73,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton goto5;
     private ImageButton goto6;
 
+    private Button pause;
+    private Button stop;
+    private Button run;
+
     /* Test for KMR position */
     private Button it_is_at1;
     private Button it_is_at2;
@@ -107,6 +111,10 @@ public class MainActivity extends AppCompatActivity {
         goto4 = (ImageButton) findViewById(R.id.imageButton4);
         goto5 = (ImageButton) findViewById(R.id.imageButton5);
         goto6 = (ImageButton) findViewById(R.id.imageButton6);
+
+        pause = (Button) findViewById(R.id.Pause);
+        stop = (Button) findViewById(R.id.Stop);
+        run = (Button) findViewById(R.id.Run);
 
 //        it_is_at1 = (Button) findViewById(R.id.button11);
 //        it_is_at2 = (Button) findViewById(R.id.button12);
@@ -172,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        if (safetyState=="SAFE"){
+/*        if (safetyState=="SAFE"){
             emergencyStop.setVisibility(View.INVISIBLE);
             emergencyFalse.setVisibility(View.INVISIBLE);
             acknowledge.setVisibility(View.INVISIBLE);
@@ -180,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             safeBox.setVisibility(View.INVISIBLE);
             warningField.setVisibility(View.INVISIBLE);
             emergencyState.setVisibility(View.INVISIBLE);
-        }
+        }*/
         //handler check for KMR feedback every 250 milliseconds
 
         final Handler handler = new Handler();
@@ -303,6 +311,40 @@ public class MainActivity extends AppCompatActivity {
 
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_6\"\n" +
+                        "}";
+                Submit(data);
+            }
+        });
+
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String data = "{\n" +
+                        "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
+                        "}";
+                Submit(data);
+            }
+        });
+
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //checkPosition();
+
+                String data = "{\n" +
+                        "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
+                        "}";
+                Submit(data);
+            }
+        });
+
+        run.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //checkPosition();
+
+                String data = "{\n" +
+                        "\"runRequest\":\"RUN\"\n" +
                         "}";
                 Submit(data);
             }
