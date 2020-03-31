@@ -44,6 +44,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
+
+    public String URL1;
+
     private TextView textView;
     private TextView textView1;
     private TextView textView2;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Integer node = 0;
     private Integer previous_node = 0;
+    private Integer id = 0;
 
     private String safetyState = "";
 
@@ -74,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton goto6;
 
     private Button pause;
-    private Button stop;
-    private Button run;
+    private Button cancel;
+    private Button resume;
 
     /* Test for KMR position */
     private Button it_is_at1;
@@ -113,12 +117,13 @@ public class MainActivity extends AppCompatActivity {
         goto6 = (ImageButton) findViewById(R.id.imageButton6);
 
         pause = (Button) findViewById(R.id.Pause);
-        stop = (Button) findViewById(R.id.Cancel);
-        run = (Button) findViewById(R.id.Resume);
+        cancel = (Button) findViewById(R.id.Cancel);
+        resume = (Button) findViewById(R.id.Resume);
 
 //        it_is_at1 = (Button) findViewById(R.id.button11);
 //        it_is_at2 = (Button) findViewById(R.id.button12);
 //        it_is_at3 = (Button) findViewById(R.id.button13);
+//        it_is_at4 = (Button) findViewById(R.id.button14);
 //        it_is_at4 = (Button) findViewById(R.id.button14);
 //        it_is_at5 = (Button) findViewById(R.id.button15);
 //        it_is_at6 = (Button) findViewById(R.id.button16);
@@ -189,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
             warningField.setVisibility(View.INVISIBLE);
             emergencyState.setVisibility(View.INVISIBLE);
         }*/
+
         //handler check for KMR feedback every 250 milliseconds
 
         final Handler handler = new Handler();
@@ -197,6 +203,8 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             public void run() {
                 jsonRequest();
+                jsonRequest2();
+
                 safetyAnimation();
 
                 // check which node is active to show the solid icon at the position.
@@ -248,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
                         "}";
@@ -260,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_2\"\n" +
                         "}";
@@ -272,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_3\"\n" +
                         "}";
@@ -284,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_4\"\n" +
                         "}";
@@ -296,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_5\"\n" +
                         "}";
@@ -308,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
                 String data = "{\n" +
                         "\"jobName\":\"MOVE_TO_CELL_6\"\n" +
                         "}";
@@ -316,35 +324,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // for pause, cancel and resume is necessary to test how to parse the integer "id". Not sure if the format is right
+
         pause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/pauseJob";
                 String data = "{\n" +
-                        "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
+                        "\"id\":\""+id+"\"\n" +
                         "}";
                 Submit(data);
             }
         });
 
-        stop.setOnClickListener(new View.OnClickListener() {
+        cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = "http://10.216.70.19:8080/restServices/webapi/services/cancelJob";
                 String data = "{\n" +
-                        "\"jobName\":\"MOVE_TO_CELL_1\"\n" +
+                        "\"id\":\""+id+"\"\n" +
                         "}";
                 Submit(data);
             }
         });
 
-        run.setOnClickListener(new View.OnClickListener() {
+        resume.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //checkPosition();
-
+                URL1 = " http://10.216.70.19:8080/restServices/webapi/services/resumeJob";
                 String data = "{\n" +
-                        "\"runRequest\":\"RUN\"\n" +
+                        "\"id\":\""+id+"\"\n" +
                         "}";
                 Submit(data);
             }
@@ -634,16 +645,38 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    /* Class to print on app screen the Json requested beforehand */
+    /* Class to request Json that contains job ID*/
+
+    private void jsonRequest2() {
+
+        String url = "http://10.216.70.19:8080/restServices/webapi/services/getLeadJob";
+        StringRequest request2 = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //weatherData.setText("Response is :- ");
+                parseData(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                textView.setText("Data Not Received");
+            }
+        });
+
+        queue.add(request2);
+        super.onStart();
+    }
+
+    /* Method to print on app screen the Json requested beforehand */
 
     private void parseData(String response) {
         try {
-            // Create JSOn Object
+            // Getting Json Object
             JSONArray jsonArray = new JSONArray(response);
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 textView.setText(jsonObject.getString("batteryLevel"));
-
+                id = jsonObject.getInt("id");
                 node = jsonObject.getInt("currentNodeID");  //activate when testing on real KMR
                 if (node!=-1){
                     previous_node=node;
@@ -662,7 +695,7 @@ public class MainActivity extends AppCompatActivity {
     /* Post Json */
     private void Submit(String data) {
         final String savedata = data;
-        String URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
+        //String URL1 = "http://10.216.70.19:8080/restServices/webapi/services/createNewJob";
 
         requestQueue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, URL1, new Response.Listener<String>() {
